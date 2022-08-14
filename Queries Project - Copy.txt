@@ -1,0 +1,63 @@
+/* Query 1 */
+SELECT
+  STRFTIME('%Y', I.InvoiceDate) AS Year,
+  SUM(I.total) Total,
+  A.Title Title
+FROM Customer C
+JOIN Invoice I
+  ON C.CustomerId = I.CustomerId
+JOIN InvoiceLine IL
+  ON IL.InvoiceId = I.InvoiceId
+JOIN Track T
+  ON IL.TrackId = t.TrackId
+JOIN Album A
+  ON A.AlbumId = T.AlbumId
+WHERE Title = 'Minha Historia'
+GROUP BY 1,
+         3
+;
+
+/* Query 2 */
+SELECT T2.Customer_Id,
+       (T1.FirstName || ' '|| T1.LastName) FullName,
+       Total
+FROM
+  (SELECT C.FirstName FirstName,
+          C.LastName,
+          I.InvoiceId Invoice_Id
+   FROM Customer C
+   JOIN Invoice I ON I.InvoiceId = C.CustomerId) T1
+JOIN
+  (SELECT SUM(Total) AS TotalPurchases,
+          CustomerId Customer_Id
+   FROM Invoice
+   GROUP BY 2
+   ORDER BY 1 DESC) T2 ON T2.Customer_Id = T1.Invoice_Id
+LIMIT 10;
+
+/* Query 3 */
+SELECT C.CustomerId,
+       (C.FirstName || ' '|| C.LastName) FullName,
+       round(AVG(I.total), 2) AvgTotal
+FROM Customer C
+JOIN Invoice I ON C.CustomerId = I.CustomerId
+WHERE Total >
+  (SELECT AVG(total)
+   FROM Invoice)
+GROUP BY 1,
+         2
+ORDER BY 3 DESC;
+
+/* Query 4 */
+SELECT G.name Name,
+       I.BillingCountry,
+       count(*) Total
+FROM Invoice I 
+JOIN InvoiceLine IL ON IL.Invoiceid = I.InvoiceId
+JOIN Track T ON T.TrackId = IL.Trackid
+JOIN Genre G ON T.GenreId = G.GenreId
+WHERE G.name = 'Rock'
+GROUP BY 1,
+         2
+ORDER BY 3 DESC
+LIMIT 10;
